@@ -1,38 +1,12 @@
-import asyncio
-import os
+from datetime import datetime
+import re
 from typing import AsyncIterable
-
-PYPPETEER_CHROMIUM_REVISION = '1263111'
-
-os.environ['PYPPETEER_CHROMIUM_REVISION'] = PYPPETEER_CHROMIUM_REVISION
-
-from pyppeteer import launch
+from src.use_cases.entities.auction_entity import AuctionItemEntity
 from pyppeteer.page import Page
 
 
-class PypeteerExtractor:
-    def __init__(self, url: str, headless: bool = True):
-        self._url = url
-        self._headless = headless
-    
-    async def __aenter__(self):
-        self._browser = await launch({ 'headless': self._headless })
-    
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
-        await self._browser.close()
-    
-    async def get_page(self):
-        return await self._browser.newPage()
-    
-    async def execute(self) -> AsyncIterable[dict[str, str]]:
-        async with self as browser:
-            async for batch in self.search_auction_batches():
-                yield batch
-
-    async def search_auction_batches(self) -> AsyncIterable[dict[str, str]]:
-        page = await self.get_page()
-        await page.goto(self._url)
-
+class PypeteerAuctionBatchesExtractor:
+    async def __call__(self, page: Page) -> AsyncIterable[AuctionItemEntity]:
         select_vitrine = await page.querySelector('#buscaVitrine')
         await page.waitFor(1000)
         if select_vitrine is None:
@@ -110,7 +84,11 @@ class PypeteerExtractor:
                     # Pegar a paginação
                     pages = await page.querySelectorAll('#resultadoVitrine #paginacao a:not([id])')
                     await page.waitFor(1000)
+
+                    auction_item = AuctionItemEntity(city=city_name, state=state_name, period=period_range)
+                    
                     if len(pages) == 0:
+                        yield auction_item
                         continue
                     for l in range(1, len(pages)):
                         await page.evaluate(f'(element) => element.click()', pages[l])
@@ -118,6 +96,7 @@ class PypeteerExtractor:
                         items = await page.querySelectorAll('#resultadoVitrine2 .resultado-busca-preco span')
                         await page.waitFor(1000)
                         if len(items) == 0:
+                            yield auction_item
                             continue
 
                         for i in range(1, len(items)):
@@ -128,11 +107,21 @@ class PypeteerExtractor:
                             if close_btn is None:
                                 continue
                             await page.evaluate('(element) => element.click()', close_btn)
-                            
-                            jewelry['state'] = state_name
-                            jewelry['city'] = city_name
-                            jewelry['period_range'] = period_range
-                            yield jewelry
+                            result_date = datetime.strptime(jewelry['result_date'], '%d/%m/%Y').date()
+                            value = 0.0
+                            if 'value' in jewelry:
+                                str_value = re.sub(r'[^0-9\,]', '', jewelry['value'])
+                                value = float(str_value.replace(',', '.'))
+                            del jewelry['result_date']
+                            del jewelry['value']
+                            yield AuctionItemEntity(
+                                **jewelry,
+                                price=value,
+                                result_date=result_date,
+                                state=auction_item.state,
+                                city=auction_item.city,
+                                period=auction_item.period
+                            )
 
     async def extract_data_from_modal(self, page: Page):
         fields = await page.querySelectorAll('#modalResultadoDetalhe .modal-resultado-busca-campos span')

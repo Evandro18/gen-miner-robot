@@ -1,19 +1,20 @@
-from datetime import datetime
+from datetime import date
+from typing import Optional
+from pydantic import BaseModel, Field, StrictStr
 
-from pydantic import BaseModel, Strict, StrictStr
 
-
-class AuctionEntity(BaseModel):
-    _id: StrictStr
+class AuctionItemEntity(BaseModel):
     state: StrictStr
     city: StrictStr
-    bid_value: float
-    description: StrictStr
-    batch_number: StrictStr
-    contract_number: StrictStr
-    centralizer: StrictStr
-    bid_date: datetime
-    result_date: datetime
-    pick_up_location: StrictStr
-    images: list[StrictStr]
+    period: StrictStr
+    bid_value: Optional[float] = Field(default=None)
+    description: StrictStr = Field(default=None)
+    batch_number: StrictStr = Field(default=None)
+    contract_number: StrictStr = Field(default=None)
+    centralizer: StrictStr = Field(default=None)
+    bid_date: Optional[StrictStr] = Field(default=None)
+    result_date: Optional[date] = Field(default=None)
+    pick_up_location: StrictStr = Field(default=None)
+    images: list[StrictStr] = Field(default=[])
+    price: Optional[float] = Field(default=None)
     
