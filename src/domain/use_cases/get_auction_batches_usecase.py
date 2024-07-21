@@ -1,38 +1,43 @@
 from datetime import date
-from typing import Any, AsyncIterable, Protocol
-from src.use_cases.entities.auction_entity import AuctionItemEntity
-from src.use_cases.save_image_usecase import SaveAuctionItemImagesUseCase
+from typing import Any, AsyncIterable
+from src.domain.ports.search_auction_batches_repository import SearchAuctionBatchesRepository
+from src.domain.use_cases.extract_data_from_documents import ExtractAuctionDataFromDocumentsUseCase
+from src.domain.use_cases.save_image_usecase import SaveAuctionItemFilesUseCase
+from src.infra.repositories.insert_auction_batch_repository import InsertAuctionBatchRepository
+from src.domain.use_cases.entities.auction_entity import AuctionItemEntity
 
-
-class SearchAuctionBatchesRepository(Protocol):
-    def execute(self) -> AsyncIterable[AuctionItemEntity]:
-        raise NotImplementedError
-    
-class InsertAuctionBatchRepository(Protocol):
-    async def execute(self, auction_item: list[AuctionItemEntity]) -> bool:
-        raise NotImplementedError
 
 class GetAuctionBatchesUseCase:
     def __init__(self,
             auction_repo: SearchAuctionBatchesRepository,
-            auction_item_images_usecase: SaveAuctionItemImagesUseCase,
-            insert_auction_batch_repo: InsertAuctionBatchRepository
+            auction_item_docs_usecase: SaveAuctionItemFilesUseCase,
+            insert_auction_batch_repo: InsertAuctionBatchRepository,
+            extract_auction_data_from_documents: ExtractAuctionDataFromDocumentsUseCase
         ):
         self._get_auction_data = auction_repo
-        self._save_auction_images = auction_item_images_usecase
+        self._save_auction_docs = auction_item_docs_usecase
         self._insert_auction_batch = insert_auction_batch_repo
+        self._extract_auction_data_from_documents = extract_auction_data_from_documents
 
     async def execute(self) -> bool:
         try:
             items = []
             iterator = self._get_auction_data.execute()
             async for batch_item in iterator:
-                batch_item.images = await self._save_auction_images.save(batch_item)
+                imgs, docs = await self._save_auction_docs.save(batch_item)
+                batch_item.images = imgs
+                batch_item.documents = docs
+
+                result = self._extract_auction_data_from_documents.execute(batch_item.documents)
+                if result is None:
+                    continue
+
+                batch_item.auction_id = result.auction_id
                 items.append(batch_item)
 
-                if len(items) == 10:
-                    await self._insert_auction_batch.execute(items)
-                    items.clear()
+                # if len(items) == 1:
+                await self._insert_auction_batch.execute(items)
+                items.clear()
             return True
         except Exception as e:
             return False
@@ -61,8 +66,9 @@ class GetAuctionBatchesUseCase:
                     file.write("; ".join(batch_keys) + "\n")
                     is_first_item = False
 
-                imgs = await self._save_auction_images.save(batch_item)
+                imgs, docs = await self._save_auction_docs.save(batch_item)
                 batch_item.images = imgs
+                batch_item.documents = docs
                 values = [self._value_to_string(v) for v in batch_item.model_dump().values()]
                 csv_row = ("; ".join(values) + '\n')
                 file.write(csv_row)

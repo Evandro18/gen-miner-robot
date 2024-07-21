@@ -4,9 +4,12 @@ from pydantic import BaseModel, Field, StrictStr
 
 
 class AuctionItemEntity(BaseModel):
+    auction_id: Optional[StrictStr] = Field(default=None)
     state: StrictStr
     city: StrictStr
     period: StrictStr
+    status: StrictStr = Field(default='pending')
+    documents: list[StrictStr] = Field(default=[])
     bid_value: Optional[float] = Field(default=None)
     description: StrictStr = Field(default=None)
     batch_number: StrictStr = Field(default=None)

@@ -1,7 +1,7 @@
 from datetime import datetime
 import re
 from typing import AsyncIterable
-from src.use_cases.entities.auction_entity import AuctionItemEntity
+from src.domain.use_cases.entities.auction_entity import AuctionItemEntity
 from pyppeteer.page import Page
 
 

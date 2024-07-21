@@ -1,4 +1,4 @@
-from src.use_cases.get_auction_batches_usecase import GetAuctionBatchesUseCase
+from src.domain.use_cases.get_auction_batches_usecase import GetAuctionBatchesUseCase
 
 
 class ScheduledDataExtraction:

@@ -1,6 +1,6 @@
 import json
 import aiohttp
-from src.use_cases.entities.auction_entity import AuctionItemEntity
+from src.domain.use_cases.entities.auction_entity import AuctionItemEntity
 
 
 class InsertAuctionBatchRepository:

@@ -1,39 +1,63 @@
 import os
-from typing import Optional
-from uuid import uuid4
+from typing import Callable, Optional
 import aiohttp
 from pydantic import BaseModel, StrictStr
+from urllib.parse import unquote
 
-class ImageRepositoryConfig(BaseModel):
+from src.infra.core.logging import Log
+
+class FileRepositoryConfig(BaseModel):
     folder_path: StrictStr
 
 class FileDownloaderRepository:
-    def __init__(self, config: ImageRepositoryConfig) -> None:
+    def __init__(self, config: FileRepositoryConfig) -> None:
         self._folder_path = config.folder_path
+        self._calls = 0
 
-    async def save(self, image_url: StrictStr, folder_hash: str) -> Optional[str]:
-        self._check_or_create_folder(f'{self._folder_path}/{folder_hash}')
+    async def save(self, file_url: StrictStr, folder_hash: str, extract_filename: Callable[[str], str]) -> Optional[str]:
+        self._calls += 1
+        folder = f'{self._folder_path}/{folder_hash}'
+        self._check_or_create_folder(folder)
+        file_name = unquote(extract_filename(file_url))
+        file_name = file_name.replace('/', '_')
+        should_save = True
+        should_request_again = False
 
-        path = None
+        path = f'{folder}/{file_name}'
         async with aiohttp.ClientSession() as session:
-            async with session.get(image_url) as response:
-                image = await response.read()
+            headers = {'cache-control': 'max-age=0'}
+            async with session.get(file_url, headers=headers) as response:
+                file_bytes = await response.read()
                 mime = response.headers.get('Content-Type')
-                last_part_url = image_url.split('/')[-1]
-                (file_name, extension) = last_part_url.split('.')
-                
+
+                if response.status != 200:
+                    should_save = False
+                    if self._calls < 3:
+                        should_request_again = True
+                    else:
+                        Log.error(f'Error while downloading file {file_url} - {response.status}')
+
                 if 'Indisponivel'.lower() in file_name.lower():
-                    return None
+                    should_save = False
                 
                 if mime is None:
-                    print(f'Could not get mime type for image {image_url}')
-                    return None
+                    Log.error(f'Could not get mime type for file {file_url}')
+                    should_save = False
 
-                image_name = f'{str(uuid4())}-{file_name}'
-                path = f'{self._folder_path}/{folder_hash}/{image_name}.{extension.lower()}'
-                with open(path, 'wb') as file:
-                    file.write(image)
-        return path
+                if mime is not None and 'application/json' in mime:
+                    should_save = False
+                
+                if should_save:
+                    with open(path, 'wb') as file:
+                        file.write(file_bytes)
+
+        if should_request_again:
+            return await self.save(file_url, folder_hash, extract_filename)
+
+        self._calls = 0
+        if os.path.exists(f'{folder}/{file_name}'):
+            return path
+        return None
     
     def _check_or_create_folder(self, folder: str):
         if not os.path.exists(folder):
