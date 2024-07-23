@@ -1,31 +1,36 @@
-import os
+import asyncio
 from typing import Any, AsyncIterable, Callable
-
-PYPPETEER_CHROMIUM_REVISION = '1263111'
-
-os.environ['PYPPETEER_CHROMIUM_REVISION'] = PYPPETEER_CHROMIUM_REVISION
-
-from pyppeteer import launch
-from pyppeteer.page import Page
-
+from src.infra.core.logging import Log
+from src.data.interceptor_state import InterceptorState
+# from pyppeteer.network_manager import Request as PyppeteerRequest
+from playwright.async_api import async_playwright, Page
+from playwright.async_api import Request as PlaywrightRequest
 
 class PypeteerExtractorBase:
-    def __init__(self, url: str, extractor_func: Callable[[Page], AsyncIterable[Any]], headless: bool = True):
+    def __init__(self, url: str, extractor_func: Callable[[Page, InterceptorState], AsyncIterable[Any]], request_interceptor: InterceptorState, headless: bool = True):
         self._url = url
         self._headless = headless
         self._extractor_func = extractor_func
-    
-    async def __aenter__(self):
-        self._browser = await launch({ 'headless': self._headless })
-    
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
-        await self._browser.close()
-    
+        self._request_interceptor = request_interceptor
+
     async def execute(self) -> AsyncIterable[Any]:
-        async with self:
-            page = await self._browser.newPage()
-            await page.goto(self._url, {
-                'waitUntil': ['load', 'domcontentloaded', 'networkidle0', 'networkidle2']
-            })
-            async for batch in self._extractor_func(page):
+        async with async_playwright() as p:
+            browser = await p.chromium.launch(headless=self._headless)
+            page = await browser.new_page()
+            await page.set_viewport_size({'width': 1920, 'height': 1080})
+            page.set_default_navigation_timeout(30000)
+            async def handle_request(request: PlaywrightRequest) -> None:
+                self._request_interceptor.set({'url': request.url, 'method': request.method})
+                # Log.info(f'Intercepting request: {request.url}')
+                execute = self._request_interceptor.validate()
+                if execute:
+                    self._request_interceptor.clear()
+                return
+
+            page.on('request', lambda request: asyncio.ensure_future(handle_request(request)))
+            await page.route('**/*', lambda route: route.abort() if 'download' in route.request.url else route.continue_())
+
+            await page.goto(self._url, wait_until='networkidle')
+            async for batch in self._extractor_func(page, self._request_interceptor):
                 yield batch
+

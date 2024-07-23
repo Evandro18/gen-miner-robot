@@ -1,5 +1,6 @@
 from datetime import date
 from typing import Any, AsyncIterable
+from src.infra.core.logging import Log
 from src.domain.ports.search_auction_batches_repository import SearchAuctionBatchesRepository
 from src.domain.use_cases.extract_data_from_documents import ExtractAuctionDataFromDocumentsUseCase
 from src.domain.use_cases.save_image_usecase import SaveAuctionItemFilesUseCase
@@ -40,6 +41,7 @@ class GetAuctionBatchesUseCase:
                 items.clear()
             return True
         except Exception as e:
+            Log.error(f"Error on GetAuctionBatchesUseCase: {e}")
             return False
     
     def _value_to_string(self, items: Any):

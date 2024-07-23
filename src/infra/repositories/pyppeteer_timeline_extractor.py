@@ -1,20 +1,20 @@
 from typing import AsyncIterable
+from src.data.interceptor_state import InterceptorState
 from src.domain.use_cases.entities.auction_entity import AuctionItemEntity
-from pyppeteer.page import Page, ElementHandle
+from playwright.async_api import Page, ElementHandle
 from urllib.parse import quote
 
 
-url = 'https://vitrinedejoias.caixa.gov.br/Paginas/default.aspx'
 file_url_base = 'https://servicebus2.caixa.gov.br/vitrinedejoias/api/cronograma/download?'
 
 
 class TimelineExtractorPyppeteer:
-    async def __call__(self, page: Page) -> AsyncIterable[AuctionItemEntity]:
+    async def __call__(self, page: Page, request_interceptor_state: InterceptorState) -> AsyncIterable[AuctionItemEntity]:
         tr_selector = '#resultadoCronograma table tbody tr'
-        table_rows = await page.querySelectorAll(tr_selector)
-        await page.waitForSelector(tr_selector)
+        table_rows = await page.query_selector_all(tr_selector)
+        await page.wait_for_selector(tr_selector)
         for row in table_rows:
-            table_cells = await row.querySelectorAll('td')
+            table_cells = await row.query_selector_all('td')
             auction = {}
             for index, cell in enumerate(table_cells):
                 cell_text = await page.evaluate('(element) => element.textContent', cell)
@@ -32,12 +32,13 @@ class TimelineExtractorPyppeteer:
                 state=auction['cell_2'],
                 city=auction['cell_3'],
                 period=auction['cell_1'],
-                documents=auction['documents']
+                documents=auction['documents'],
+                status=auction['cell_5'],
             )
 
     async def _extract_documents_paths(self, page: Page, cell: ElementHandle) -> list[str]:
         options_selector = 'select option'
-        options = await cell.querySelectorAll(options_selector)
+        options = await cell.query_selector_all(options_selector)
         documents_path: list[str] = []
         for opt_index, option in enumerate(options):
             if opt_index == 0:
