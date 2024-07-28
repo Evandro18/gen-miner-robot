@@ -1,11 +1,11 @@
 import asyncio
 from typing import Any
 from src.infra.core.logging import Log
-from src.infra.repositories.pyppeteer_timeline_extractor import TimelineExtractorPyppeteer
+from src.infra.repositories.timeline_extractor_repository import TimelineExtractorRepository
 from src.data.interceptor_state import InterceptorState
 from src.config.env import ConfigEnvs
 from src.infra.factories.auction_extraction_current import auction_extraction_current_factory
-from src.infra.repositories.get_auction_baches_repository import PypeteerAuctionBatchesExtractor
+from src.infra.repositories.get_auction_baches_repository import AuctionBatchesExtractorRepository
 from argparse import ArgumentParser
 
 
@@ -21,10 +21,10 @@ interceptorState = InterceptorState.builder(validator=interceptor_validator)
 async def main(extractor_key: str, headless: bool):
     url = ''
     if extractor_key == 'timeline':
-        extractor_func = TimelineExtractorPyppeteer()
+        extractor_func = TimelineExtractorRepository()
         url = ConfigEnvs.TIMELINE_URL
     if extractor_key == 'batches':
-        extractor_func = PypeteerAuctionBatchesExtractor()
+        extractor_func = AuctionBatchesExtractorRepository()
         url = ConfigEnvs.SHOWCASE_URL
 
     scheduled_data_extraction = auction_extraction_current_factory(url, extractor_func=extractor_func, interceptor_state=interceptorState, headless=headless)

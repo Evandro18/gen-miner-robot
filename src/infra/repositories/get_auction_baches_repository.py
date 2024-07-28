@@ -9,7 +9,7 @@ from src.domain.use_cases.entities.auction_entity import AuctionItemEntity
 from playwright.async_api import async_playwright, Page
 
 
-class PypeteerAuctionBatchesExtractor:
+class AuctionBatchesExtractorRepository:
     async def __call__(self, page: Page, request_interceptor_state: InterceptorState) -> AsyncIterable[AuctionItemEntity]:
         await page.wait_for_timeout(1000)
         select_vitrine = await page.query_selector('#buscaVitrine')
@@ -116,17 +116,15 @@ class PypeteerAuctionBatchesExtractor:
                             if close_btn is None:
                                 continue
                             await page.evaluate('(element) => element.click()', close_btn)
-                            result_date = datetime.strptime(jewelry['result_date'], '%d/%m/%Y').date()
                             value = 0.0
                             if 'value' in jewelry:
                                 str_value = re.sub(r'[^0-9\,]', '', jewelry['value'])
                                 value = float(str_value.replace(',', '.'))
-                            del jewelry['result_date']
+
                             del jewelry['value']
                             yield AuctionItemEntity(
                                 **jewelry,
-                                price=value,
-                                result_date=result_date,
+                                min_bid_value=value,
                                 state=auction_item.state,
                                 city=auction_item.city,
                                 period=auction_item.period

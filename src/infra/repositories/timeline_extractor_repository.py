@@ -8,7 +8,7 @@ from urllib.parse import quote
 file_url_base = 'https://servicebus2.caixa.gov.br/vitrinedejoias/api/cronograma/download?'
 
 
-class TimelineExtractorPyppeteer:
+class TimelineExtractorRepository:
     async def __call__(self, page: Page, request_interceptor_state: InterceptorState) -> AsyncIterable[AuctionItemEntity]:
         tr_selector = '#resultadoCronograma table tbody tr'
         table_rows = await page.query_selector_all(tr_selector)
@@ -32,6 +32,7 @@ class TimelineExtractorPyppeteer:
                 state=auction['cell_2'],
                 city=auction['cell_3'],
                 period=auction['cell_1'],
+                withdrawal_period=auction['cell_4'],
                 documents=auction['documents'],
                 status=auction['cell_5'],
             )

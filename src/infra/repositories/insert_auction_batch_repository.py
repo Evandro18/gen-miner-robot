@@ -6,7 +6,7 @@ from src.domain.use_cases.entities.auction_entity import AuctionItemEntity
 class InsertAuctionBatchRepository:
     
     def __init__(self) -> None:
-        self._path = 'http://localhost:3000/auction'
+        self._path = 'http://localhost:3000/auctions'
     
     async def execute(self, auction_item: list[AuctionItemEntity]) -> bool:
          async with aiohttp.ClientSession() as session:
@@ -14,8 +14,8 @@ class InsertAuctionBatchRepository:
             payload = []
             for item in auction_item:
                 payload_item = item.model_dump()
-                if payload_item['result_date'] is not None:
-                    payload_item['result_date'] = payload_item['result_date'].strftime('%Y-%m-%d')
+                # if payload_item['result_date'] is not None:
+                #     payload_item['result_date'] = payload_item['result_date'].strftime('%d/%m/%Y')
 
                 payload.append(payload_item)
 
