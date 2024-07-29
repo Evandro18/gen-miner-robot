@@ -17,7 +17,12 @@
             "request": "launch",
             "program": "${workspaceFolder}/main.py",
             "console": "integratedTerminal",
-            "args": ["--headless", "1", "--extractor", "batches"]
+            "args": [
+                "--headless",
+                "1",
+                "--extractor",
+                "batches"
+            ]
         }
     ]
 }

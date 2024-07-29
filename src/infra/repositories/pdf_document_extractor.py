@@ -33,7 +33,8 @@ class PDFTextExtractor:
             file_reader = self._read_pdf(file)
             result = self._extract_text(file_reader)
             props = {
-                'auction_id': self._search_by_pattern(result, r'Leilão\snº\s(\d{1,}\/\d{1,}\/\d{1,}\.\d{1,})'),
+                'auction_id': self._search_by_pattern(result, r'Leilão\s{1,}nº\s{1,}(\d{1,}\/\d{1,}\/\d{1,}\.\d{1,})'),
+                'result_date': self._search_by_pattern(result, r'Relatório de Lances Empatados: dia (\d{2}\/\d{2}\/\d{4})')
             }
             return props
         except Exception as e:

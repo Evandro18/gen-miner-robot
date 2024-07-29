@@ -48,7 +48,7 @@ def initialize_logger(logger_name: str):
     logger.setLevel(logging.DEBUG)
     logger.addHandler(file_handler)
     
-    if Envs.FASTAPI_DEBUG:
+    if Envs.DEBUG:
         console_handler = logging.StreamHandler(sys.stdout)
         console_handler.setFormatter(formatter)
         logger.addHandler(console_handler)

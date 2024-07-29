@@ -171,15 +171,16 @@ async def extract_data_from_modal(page: Page, request_interceptor_state: Interce
     # await page.wait_for_selector('#modalResultadoDetalhe #modalResultadoValorLance span')
     value = await page.evaluate('(element) => element.textContent', valueSelector)
     images: list[str] = []
-    img_selector = await page.query_selector('#modalResultadoDetalhe .resultado-busca-thumbnail img')
-    await page.wait_for_selector('#modalResultadoDetalhe .resultado-busca-thumbnail img')
-    images.append(await page.evaluate('(element) => element.src', img_selector))
-    
-    thumbnails_selector = await page.query_selector_all('#modalResultadoDetalhe .resultado-busca-miniaturas div img')
-    await page.wait_for_selector('#modalResultadoDetalhe .resultado-busca-miniaturas div img')
-    thumbnailsUrl1 = await page.evaluate('(element) => element.src', thumbnails_selector[0])
-    thumbnailsUrl2 = await page.evaluate('(element) => element.src', thumbnails_selector[1])
-    images.extend([thumbnailsUrl1, thumbnailsUrl2])
+
+    try:
+        img_selector = await page.query_selector('#modalResultadoDetalhe .resultado-busca-thumbnail img')
+        images.append(await page.evaluate('(element) => element.src', img_selector))
+        thumbnails_selector = await page.query_selector_all('#modalResultadoDetalhe .resultado-busca-miniaturas div img')
+        thumbnailsUrl1 = await page.evaluate('(element) => element.src', thumbnails_selector[0])
+        thumbnailsUrl2 = await page.evaluate('(element) => element.src', thumbnails_selector[1])
+        images.extend([thumbnailsUrl1, thumbnailsUrl2])
+    except Exception as e:
+        Log.error(f"Error on extract thumbnails: {e}")
     selector_actions = '#modalResultadoDetalhe .action a'
     actions = await page.query_selector_all(selector_actions)
     await page.wait_for_selector(selector_actions)

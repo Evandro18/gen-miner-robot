@@ -1,8 +1,8 @@
-from src.domain.use_cases.get_auction_batches_usecase import GetAuctionBatchesUseCase
+from src.domain.use_cases.get_auction_batches_usecase import ExtractAuctionDataUseCase
 
 
 class ScheduledDataExtraction:
-    def __init__(self, data_extraction_service: GetAuctionBatchesUseCase):
+    def __init__(self, data_extraction_service: ExtractAuctionDataUseCase):
         self.data_extraction_service = data_extraction_service
 
     async def run(self):

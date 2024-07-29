@@ -8,7 +8,7 @@ from src.infra.commads.scheduled_data_extraction import ScheduledDataExtraction
 from src.infra.repositories.file_downloader_repository import FileDownloaderRepository, FileRepositoryConfig
 from src.infra.repositories.insert_auction_batch_repository import InsertAuctionBatchRepository
 from src.infra.repositories.extractor_base import PypeteerExtractorBase
-from src.domain.use_cases.get_auction_batches_usecase import GetAuctionBatchesUseCase
+from src.domain.use_cases.get_auction_batches_usecase import ExtractAuctionDataUseCase
 from src.domain.use_cases.save_image_usecase import SaveAuctionItemFilesUseCase
 from playwright.async_api import Page
 
@@ -22,7 +22,7 @@ def auction_extraction_current_factory(url: str, extractor_func: Callable[[Page,
     )
 
     insert_auction_batch_repo = InsertAuctionBatchRepository()
-    auction_batches_use_case = GetAuctionBatchesUseCase(
+    auction_batches_use_case = ExtractAuctionDataUseCase(
         auction_repo=extractor_base,
         insert_auction_batch_repo=insert_auction_batch_repo,
         extract_auction_data_from_documents=ExtractAuctionDataFromDocumentsUseCase(

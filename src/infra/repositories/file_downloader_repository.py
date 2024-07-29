@@ -1,3 +1,4 @@
+import asyncio
 import os
 from typing import Callable, Optional
 import aiohttp
@@ -33,6 +34,7 @@ class FileDownloaderRepository:
                 if response.status != 200:
                     should_save = False
                     if self._calls < 3:
+                        await asyncio.sleep(2)
                         should_request_again = True
                     else:
                         Log.error(f'Error while downloading file {file_url} - {response.status}')

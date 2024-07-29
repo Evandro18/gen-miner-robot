@@ -8,7 +8,7 @@ from src.infra.repositories.insert_auction_batch_repository import InsertAuction
 from src.domain.use_cases.entities.auction_entity import AuctionItemEntity
 
 
-class GetAuctionBatchesUseCase:
+class ExtractAuctionDataUseCase:
     def __init__(self,
             auction_repo: SearchAuctionBatchesRepository,
             auction_item_docs_usecase: SaveAuctionItemFilesUseCase,
@@ -34,6 +34,8 @@ class GetAuctionBatchesUseCase:
                     continue
 
                 batch_item.auction_id = result.auction_id
+                batch_item.result_date = result.result_date
+                Log.info(f"Extracted auction data from documents: {batch_item}")
                 items.append(batch_item)
 
                 # if len(items) == 1:
