@@ -1,4 +1,5 @@
 from typing import Any, AsyncIterable, Callable
+from src.infra.repositories.pdf_document_result_extractor import PDFDocumentResultExtractor
 from src.data.interceptor_state import InterceptorState
 from src.config.env import ConfigEnvs
 from src.data.hash_string import HashString
@@ -26,7 +27,8 @@ def auction_extraction_current_factory(url: str, extractor_func: Callable[[Page,
         auction_repo=extractor_base,
         insert_auction_batch_repo=insert_auction_batch_repo,
         extract_auction_data_from_documents=ExtractAuctionDataFromDocumentsUseCase(
-            document_extractor=PDFTextExtractor()
+            document_extractor=PDFTextExtractor(),
+            pdfdocument_result_extractor=PDFDocumentResultExtractor()
         ),
         auction_item_docs_usecase=save_images_usecase
     )

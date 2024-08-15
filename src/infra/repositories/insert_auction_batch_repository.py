@@ -6,7 +6,7 @@ from src.domain.use_cases.entities.auction_entity import AuctionItemEntity
 class InsertAuctionBatchRepository:
 
     def __init__(self) -> None:
-        self._path = "http://localhost:3000/auctions"
+        self._path = "http://localhost:8082/backend-auctions/auctions"
 
     async def execute(self, auction_item: list[AuctionItemEntity]) -> bool:
         async with aiohttp.ClientSession() as session:

@@ -35,6 +35,9 @@ class ExtractAuctionDataUseCase:
 
                 batch_item.auction_id = result.auction_id
                 batch_item.result_date = result.result_date
+                batch_item.sold_batches = result.sold_batches
+                batch_item.unsold_batches = result.unsold_batches
+
                 Log.info(f"Extracted auction data from documents: {batch_item}")
                 items.append(batch_item)
 

@@ -25,7 +25,7 @@ async def main(extractor_key: str, headless: bool, months_before: int = 1, month
         url = ConfigEnvs.TIMELINE_URL
     if extractor_key == 'batches':
         extractor_func = AuctionBatchesExtractorRepository()
-        url = ConfigEnvs.SHOWCASE_URL   
+        url = ConfigEnvs.SHOWCASE_URL
 
     scheduled_data_extraction = auction_extraction_current_factory(url, extractor_func=extractor_func, interceptor_state=interceptorState, headless=headless)
     await scheduled_data_extraction.run()
@@ -39,4 +39,9 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     Log.info(f"Running with args: {args}")
-    asyncio.run(main(extractor_key=args.extractor, headless=bool(args.headless)))
+    asyncio.run(main(
+        extractor_key=args.extractor,
+        headless=bool(args.headless),
+        months_before=args.months_before,
+        months_after=args.months_after
+    ))

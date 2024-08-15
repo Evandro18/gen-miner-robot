@@ -21,7 +21,9 @@
                 "--headless",
                 "1",
                 "--extractor",
-                "batches"
+                "timeline",
+                "--months_before",
+                "2",
             ]
         }
     ]

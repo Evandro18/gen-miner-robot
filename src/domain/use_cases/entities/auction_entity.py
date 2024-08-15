@@ -22,7 +22,9 @@ class AuctionItemEntity(BaseModel):
     result_date: Optional[str] = Field(default=None)
     pick_up_location: StrictStr = Field(default=None)
     images: list[StrictStr] = Field(default=[])
-    
+    sold_batches: list[StrictStr] = Field(default=[])
+    unsold_batches: list[StrictStr] = Field(default=[])
+
     def __str__(self) -> StrictStr:
         return f'{self.state}-{self.city}-{self.period}-{self.batch_number}-{self.contract_number}'
     
