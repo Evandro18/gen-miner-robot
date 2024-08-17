@@ -1,6 +1,7 @@
 import json
 import aiohttp
 from src.domain.use_cases.entities.auction_entity import AuctionItemEntity
+from src.infra.core.logging import Log
 
 
 class InsertAuctionBatchRepository:
@@ -24,7 +25,7 @@ class InsertAuctionBatchRepository:
                     url=self._path, data=payload_json, headers=headers
                 ) as response:
                     if response.ok:
-                        print(f"Inserted {len(auction_item)} items")
+                        Log.info(f"Inserted {len(auction_item)} items")
                     return response.status == 200
             except:
                 return False

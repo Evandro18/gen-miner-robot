@@ -23,7 +23,7 @@
                 "--extractor",
                 "timeline",
                 "--months_before",
-                "2",
+                "1",
             ]
         }
     ]
