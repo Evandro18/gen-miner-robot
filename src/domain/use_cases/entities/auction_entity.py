@@ -7,8 +7,8 @@ class AuctionItemEntity(BaseModel):
     auction_id: Optional[StrictStr] = Field(default=None)
     state: StrictStr
     city: StrictStr
-    period: StrictStr
-    status: StrictStr = Field(default='pending')
+    period: Optional[StrictStr] = Field(default=None)
+    status: StrictStr = Field(default="pending")
     withdrawal_period: StrictStr = Field(default=None)
     exposure_period: StrictStr = Field(default=None)
     documents: list[StrictStr] = Field(default=[])
@@ -26,5 +26,4 @@ class AuctionItemEntity(BaseModel):
     unsold_batches: list[StrictStr] = Field(default=[])
 
     def __str__(self) -> StrictStr:
-        return f'{self.state}-{self.city}-{self.period}-{self.batch_number}-{self.contract_number}'
-    
+        return f"{self.state}-{self.city}-{self.auction_id}"

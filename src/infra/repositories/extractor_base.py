@@ -2,11 +2,10 @@ import asyncio
 from typing import Any, AsyncIterable, Callable
 from src.infra.core.logging import Log
 from src.data.interceptor_state import InterceptorState
-# from pyppeteer.network_manager import Request as PyppeteerRequest
 from playwright.async_api import async_playwright, Page
 from playwright.async_api import Request as PlaywrightRequest
 
-class PypeteerExtractorBase:
+class PlaywrightExtractorBase:
     def __init__(self, url: str, extractor_func: Callable[[Page, InterceptorState], AsyncIterable[Any]], request_interceptor: InterceptorState, headless: bool = True):
         self._url = url
         self._headless = headless
@@ -21,7 +20,6 @@ class PypeteerExtractorBase:
             page.set_default_navigation_timeout(30000)
             async def handle_request(request: PlaywrightRequest) -> None:
                 self._request_interceptor.set({'url': request.url, 'method': request.method})
-                # Log.info(f'Intercepting request: {request.url}')
                 execute = self._request_interceptor.validate()
                 if execute:
                     self._request_interceptor.clear()

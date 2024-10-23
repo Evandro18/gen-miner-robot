@@ -21,6 +21,9 @@ class ExtractAuctionDataFromDocumentsUseCase:
         try:
             document = self._extract_properties_from_notice(document_paths)
             extracted_data = self._extract_auction_result(document_paths)
+            if document is None:
+                return None
+
             result = AuctionDataExtracted(
                 **document,
                 sold_batches=(
@@ -43,7 +46,7 @@ class ExtractAuctionDataFromDocumentsUseCase:
 
     def _extract_properties_from_notice(
         self, document_paths: list[str]
-    ) -> dict[str, str]:
+    ) -> Optional[dict[str, str]]:
         # Extracts the auction data from edital document
         path = next(
             (
@@ -54,7 +57,8 @@ class ExtractAuctionDataFromDocumentsUseCase:
             None,
         )
         if not path:
-            raise ValueError("Document path cannot be empty")
+            Log.info("Document path cannot be empty")
+            return None
 
         document = self._document_extractor.execute(path)
         return document

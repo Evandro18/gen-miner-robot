@@ -8,14 +8,14 @@ from src.infra.repositories.pdf_document_extractor import PDFTextExtractor
 from src.infra.commads.scheduled_data_extraction import ScheduledDataExtraction
 from src.infra.repositories.file_downloader_repository import FileDownloaderRepository, FileRepositoryConfig
 from src.infra.repositories.insert_auction_batch_repository import InsertAuctionBatchRepository
-from src.infra.repositories.extractor_base import PypeteerExtractorBase
+from src.infra.repositories.extractor_base import PlaywrightExtractorBase
 from src.domain.use_cases.get_auction_batches_usecase import ExtractAuctionDataUseCase
 from src.domain.use_cases.save_image_usecase import SaveAuctionItemFilesUseCase
 from playwright.async_api import Page
 
 
 def auction_extraction_current_factory(url: str, extractor_func: Callable[[Page, InterceptorState], AsyncIterable[Any]], interceptor_state: InterceptorState, headless = True) -> ScheduledDataExtraction:
-    extractor_base = PypeteerExtractorBase(url, extractor_func, request_interceptor=interceptor_state, headless=headless)
+    extractor_base = PlaywrightExtractorBase(url, extractor_func, request_interceptor=interceptor_state, headless=headless)
     file_repository_downloader = FileRepositoryConfig(folder_path=ConfigEnvs.IMAGES_FOLDER_PATH)
     save_images_usecase = SaveAuctionItemFilesUseCase(
         file_repository=FileDownloaderRepository(config=file_repository_downloader),

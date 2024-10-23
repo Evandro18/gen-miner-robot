@@ -32,7 +32,7 @@ class SaveAuctionItemFilesUseCase:
             f"{auction_item.city}-{auction_item.state}-{auction_item.period}"
         )
         auction_folder_hash = self._hashing(text=auction_folder_key)
-
+        # TODO: Review this key
         auction_item_folder_key = f"{auction_item.city}-{auction_item.state}-{auction_item.period}-{auction_item.batch_number}-{auction_item.contract_number}"
         auction_item_folder_hash = self._hashing(text=auction_item_folder_key)
         images_urls = await self._download_list(

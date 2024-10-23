@@ -59,7 +59,8 @@ class TimelineExtractorRepository:
                 yield AuctionItemEntity(
                     state=auction["cell_2"],
                     city=auction["city"],
-                    period=auction["cell_1"],
+                    period=auction["cell_0"],
+                    exposure_period=auction["cell_1"],
                     withdrawal_period=auction["cell_4"],
                     documents=auction["documents"],
                     status=auction["cell_5"],
