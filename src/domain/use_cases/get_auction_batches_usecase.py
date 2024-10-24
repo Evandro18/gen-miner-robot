@@ -56,6 +56,7 @@ class ExtractAuctionDataUseCase:
                 batch_item.result_date = extracted_data.result_date
                 batch_item.sold_batches = extracted_data.sold_batches
                 batch_item.unsold_batches = extracted_data.unsold_batches
+                batch_item.exposure_period = extracted_data.exposure_date or ""
 
                 Log.info(f"Extracted auction data from documents: {batch_item}")
                 items.append(batch_item)
