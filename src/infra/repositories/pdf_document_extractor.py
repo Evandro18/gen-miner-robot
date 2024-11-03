@@ -12,16 +12,20 @@ class PDFTextExtractor(PDFTextExtractorAbstract):
         try:
             file_reader = self._read_pdf(file)
             result = self._extract_text(file_reader)
+            exposure_date = self._search_by_pattern(
+                result,
+                r"exposição\s{1,}dos\s{1,}lotes:\s{1,}de\s{1,}(\d{2}\/\d{2}\s{0,}\/\d{4}\s{1,}[aà]\s{1,}\d{2}\/\d{2}\/\d{4})",
+            )
             props = {
                 "auction_id": self._search_by_pattern(
                     result, r"Leilão\s{1,}nº\s{1,}(\d{1,}\/\d{1,}\/\d{1,}\.\d{1,})"
                 ),
                 "result_date": self._search_by_pattern(
-                    result, r"Relatório de Lances Empatados: dia (\d{2}\/\d{2}\/\d{4})"
-                ),
-                "exposure_date": self._search_by_pattern(
                     result,
-                    r"exposição\s{1,}dos\s{1,}lotes:\s{1,}de\s{1,}(\d{2}\/\d{2}\/\d{4}\s{1,}a\s{1,}\d{2}\/\d{2}\/\d{4})",
+                    r"Relatório de Lances Empatado\s?s: dia (\d{2}\/\d{2}\/\d{4})",
+                ),
+                "exposure_date": (
+                    exposure_date.replace(r" /", "/") if exposure_date else ""
                 ),
             }
             return props
