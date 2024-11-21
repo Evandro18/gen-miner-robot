@@ -1,19 +1,16 @@
-from datetime import datetime
-from multiprocessing.sharedctypes import Value
-from operator import is_
 import re
 from typing import AsyncIterable
+from src.domain.ports.extractors import ExtractorExtraParameters
 from src.data.interceptor_state import InterceptorState
 from src.infra.core.logging import Log
 from src.domain.use_cases.entities.auction_entity import AuctionItemEntity
-from playwright.async_api import async_playwright, Page
+from playwright.async_api import Page
 
 
 class AuctionBatchesExtractorRepository:
     async def __call__(
-        self, page: Page, request_interceptor_state: InterceptorState
+        self, page: Page, extra_params: ExtractorExtraParameters
     ) -> AsyncIterable[AuctionItemEntity]:
-        await page.wait_for_timeout(1000)
         select_vitrine = await page.query_selector("#buscaVitrine")
         await page.wait_for_selector("#buscaVitrine")
         if select_vitrine is None:
@@ -144,7 +141,7 @@ class AuctionBatchesExtractorRepository:
                                 f"(element) => element.click()", items[i]
                             )
                             jewelry = await extract_data_from_modal(
-                                page, request_interceptor_state
+                                page, extra_params.request_interceptor_state
                             )
                             close_btn = await page.query_selector(
                                 "#modalResultadoDetalhe .close span"

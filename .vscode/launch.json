@@ -9,7 +9,8 @@
             "type": "debugpy",
             "request": "launch",
             "program": "${file}",
-            "console": "integratedTerminal"
+            "console": "integratedTerminal",
+            "justMyCode": false
         },
         {
             "name": "Python: Main File",
@@ -19,11 +20,13 @@
             "console": "integratedTerminal",
             "args": [
                 "--headless",
-                "1",
+                "0",
                 "--extractor",
                 "timeline",
                 "--months_before",
-                "1",
+                "0",
+                "--months_after",
+                "0",
             ]
         }
     ]

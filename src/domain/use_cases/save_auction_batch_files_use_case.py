@@ -18,7 +18,7 @@ def extract_image_name(file_url: str) -> str:
     return f"{file_name}.{extension.lower()}"
 
 
-class SaveAuctionItemFilesUseCase:
+class SaveAuctionBatchFilesUseCase:
     def __init__(
         self, file_repository: SaveFileRepository, hashing: HashString
     ) -> None:

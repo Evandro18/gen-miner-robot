@@ -1,47 +1,40 @@
 import asyncio
-from typing import Any
-from src.infra.core.logging import Log
-from src.infra.repositories.timeline_extractor_repository import TimelineExtractorRepository
-from src.data.interceptor_state import InterceptorState
-from src.config.env import ConfigEnvs
-from src.infra.factories.auction_extraction_current import auction_extraction_current_factory
-from src.infra.repositories.get_auction_baches_repository import AuctionBatchesExtractorRepository
-from argparse import ArgumentParser
+from typing import Annotated
+from fastapi import Body, FastAPI
+from openai import BaseModel
+
+from src.infra.utiils.gracefully_shutdown import GracefulKiller
+from src.domain.use_cases.entities.data_extraction_type import DataExtractionType
+from job import TaskRunner, job
 
 
-global interceptorState
+app = FastAPI()
 
-def interceptor_validator(values: dict[str, Any]) -> bool:
-    if '/download' in values['url']:
-        return False
-    return True
 
-interceptorState = InterceptorState.builder(validator=interceptor_validator)
+class StartDataExtractionRequest(BaseModel):
+    extractor_type: DataExtractionType
+    months_before: int
+    months_after: int
 
-async def main(extractor_key: str, headless: bool, months_before: int = 1, months_after: int = 1):
-    url = ''
-    if extractor_key == 'timeline':
-        extractor_func = TimelineExtractorRepository(months_before=months_before, months_after=months_after)
-        url = ConfigEnvs.TIMELINE_URL
-    if extractor_key == 'batches':
-        extractor_func = AuctionBatchesExtractorRepository()
-        url = ConfigEnvs.SHOWCASE_URL
 
-    scheduled_data_extraction = auction_extraction_current_factory(url, extractor_func=extractor_func, interceptor_state=interceptorState, headless=headless)
-    await scheduled_data_extraction.run()
+@app.post("/extractor")
+async def start_robot(body: Annotated[StartDataExtractionRequest, Body()]):
+    # TODO: implement the executions of the job coordinator
+    asyncio.create_task(
+        job(
+            extractor_key=body.extractor_type,
+            headless=True,
+            months_before=body.months_before,
+            months_after=body.months_after,
+        )
+    )
+    return {"message": "Job Running"}
 
-if __name__ == '__main__':
-    parser = ArgumentParser()
-    parser.add_argument('--headless', type=int, default=1, choices=[0, 1])
-    parser.add_argument('--extractor', type=str, default='timeline', choices=['timeline', 'batches'])
-    parser.add_argument('--months_before', type=int, default=1)
-    parser.add_argument('--months_after', type=int, default=1)
 
-    args = parser.parse_args()
-    Log.info(f"Running with args: {args}")
-    asyncio.run(main(
-        extractor_key=args.extractor,
-        headless=bool(args.headless),
-        months_before=args.months_before,
-        months_after=args.months_after
-    ))
+if __name__ == "__main__":
+    import uvicorn
+
+    runner = TaskRunner()
+    runner.start()
+    GracefulKiller([runner.stop])
+    uvicorn.run("main:app")

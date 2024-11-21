@@ -1,7 +1,6 @@
-from calendar import month
-from typing import AsyncIterable
-
+from typing import AsyncIterable, Optional
 from pydantic import StrictStr
+from src.domain.ports.extractors import ExtractorExtraParameters
 from src.data.interceptor_state import InterceptorState
 from src.domain.use_cases.entities.auction_entity import AuctionItemEntity
 from playwright.async_api import Page, ElementHandle
@@ -14,23 +13,22 @@ file_url_base = (
 
 
 class TimelineExtractorRepository:
-    def __init__(self, months_before: int = 1, months_after: int = 1) -> None:
-        self._months_before = months_before
-        self._months_after = months_after
 
     async def __call__(
-        self, page: Page, request_interceptor_state: InterceptorState
+        self,
+        page: Page,
+        extra_params: ExtractorExtraParameters,
     ) -> AsyncIterable[AuctionItemEntity]:
         month_before_btn_selector = "#vitrineCronogramaFiltroMes #prev-1 a"
         await page.wait_for_selector(month_before_btn_selector)
         counter = 0
-        while counter < self._months_before:
+        while counter < extra_params.months_before:
             await page.click(month_before_btn_selector)
             await page.wait_for_selector(month_before_btn_selector)
             counter += 1
 
         counter = 0
-        while counter < (self._months_before + self._months_after) + 1:
+        while counter < (extra_params.months_before + extra_params.months_after) + 1:
             if counter > 0:
                 month_after_btn_selector = "#vitrineCronogramaFiltroMes #next-1 a"
                 await page.click(month_after_btn_selector)
