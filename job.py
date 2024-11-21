@@ -1,30 +1,30 @@
 import asyncio
 import threading
-from time import time, sleep, strftime, localtime
-from types import FrameType
+from argparse import ArgumentParser
+from time import localtime, sleep, strftime, time
 from typing import Any
+
+import schedule
+
+from src.config.env import ConfigEnvs
+from src.data.interceptor_state import InterceptorState
+from src.domain.ports.extractors import ExtractorExtraParameters
+from src.infra.commads.scheduled_data_extraction import DataExtractionType
+from src.infra.core.logging import Log
+from src.infra.factories.auction_extraction_current import (
+    auction_extraction_current_factory,
+)
+from src.infra.repositories.extractor_base import PlaywrightExtractorBase
+from src.infra.repositories.get_auction_baches_repository import (
+    AuctionBatchesExtractorRepository,
+)
 from src.infra.repositories.sqlserver.database import Database
 from src.infra.repositories.sqlserver.robot_execution_repository import (
     RobotExecutionRepository,
 )
-from src.domain.ports.extractors import ExtractorExtraParameters
-from src.infra.repositories.extractor_base import PlaywrightExtractorBase
-from src.infra.commads.scheduled_data_extraction import DataExtractionType
-from src.infra.core.logging import Log
 from src.infra.repositories.timeline_extractor_repository import (
     TimelineExtractorRepository,
 )
-from src.data.interceptor_state import InterceptorState
-from src.config.env import ConfigEnvs
-from src.infra.factories.auction_extraction_current import (
-    auction_extraction_current_factory,
-)
-from src.infra.repositories.get_auction_baches_repository import (
-    AuctionBatchesExtractorRepository,
-)
-from argparse import ArgumentParser
-import schedule
-
 
 global interceptorState
 
@@ -90,12 +90,14 @@ def job_waiter(*arks, **kwargs):
 
 class TaskRunner:
     _thread: threading.Thread
+    _stop = False
 
     def start(self):
         self._thread = threading.Thread(target=self.run)
         self._thread.start()
 
-    def stop(self, signal: int, frame: FrameType | None):
+    def stop(self):
+        self._stop = True
         self._thread.join()
 
     def run(self):
@@ -118,9 +120,14 @@ class TaskRunner:
             job_waiter, DataExtractionType.BATCHES, params2
         )
 
-        while True:
-            schedule.run_pending()
-            sleep(1)
+        try:
+            while not self._stop:
+                schedule.run_pending()
+                sleep(1)
+        except (KeyboardInterrupt, SystemExit):
+            Log.info("Exiting TaskRunner")
+            if self._thread:
+                self._thread.join()
 
 
 if __name__ == "__main__":

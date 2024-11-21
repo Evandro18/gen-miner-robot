@@ -1,14 +1,24 @@
 import asyncio
+from contextlib import asynccontextmanager
 from typing import Annotated
+
 from fastapi import Body, FastAPI
 from openai import BaseModel
 
-from src.infra.utiils.gracefully_shutdown import GracefulKiller
-from src.domain.use_cases.entities.data_extraction_type import DataExtractionType
 from job import TaskRunner, job
+from src.domain.use_cases.entities.data_extraction_type import DataExtractionType
 
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    runner = TaskRunner()
+    runner.start()
+    yield
+    runner.stop()
+    # GracefulKiller([runner.stop])
+
+
+app = FastAPI(lifespan=lifespan)
 
 
 class StartDataExtractionRequest(BaseModel):
@@ -34,7 +44,4 @@ async def start_robot(body: Annotated[StartDataExtractionRequest, Body()]):
 if __name__ == "__main__":
     import uvicorn
 
-    runner = TaskRunner()
-    runner.start()
-    GracefulKiller([runner.stop])
-    uvicorn.run("main:app")
+    uvicorn.run("main:app", port=8083)

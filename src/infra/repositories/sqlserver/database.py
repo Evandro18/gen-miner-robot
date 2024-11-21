@@ -14,9 +14,8 @@ class Database:
     _session_local: sessionmaker
 
     def __init__(self):
-        engine = create_engine(
-            f"mssql+pymssql://{ConfigEnvs.DATABASE_USER}:{ConfigEnvs.DATABASE_PASSWORD}@{ConfigEnvs.DATABASE_HOST}/{ConfigEnvs.DATABASE_NAME}"
-        )
+        url = f"mssql+pymssql://{ConfigEnvs.DATABASE_USER}:{ConfigEnvs.DATABASE_PASSWORD}@{ConfigEnvs.DATABASE_HOST}/{ConfigEnvs.DATABASE_NAME}"
+        engine = create_engine(url=url)
         self._session_local = sessionmaker(
             autocommit=False, autoflush=False, bind=engine
         )
