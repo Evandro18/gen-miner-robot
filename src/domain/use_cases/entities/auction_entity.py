@@ -1,5 +1,5 @@
-from datetime import date
 from typing import Optional
+
 from pydantic import BaseModel, Field, StrictStr
 
 
@@ -26,4 +26,7 @@ class AuctionItemEntity(BaseModel):
     unsold_batches: list[StrictStr] = Field(default=[])
 
     def __str__(self) -> StrictStr:
-        return f"{self.state}-{self.city}-{self.auction_id}"
+        base_str = f"{self.state}-{self.city}-{self.auction_id}"
+        if self.batch_number is not None:
+            base_str = f"{base_str}-{self.batch_number}"
+        return base_str

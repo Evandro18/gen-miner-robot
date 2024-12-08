@@ -1,13 +1,14 @@
 from datetime import datetime
+
 from src.domain.ports.extractors import ExtractorExtraParameters
+from src.domain.use_cases.entities.data_extraction_type import DataExtractionType
 from src.domain.use_cases.entities.roboto_execution_entity import RobotExecutionEntity
+from src.domain.use_cases.process_auction_data_extraction_use_case import (
+    ProcessAuctionDataExtractionUseCase,
+)
 from src.infra.core.logging import Log
 from src.infra.repositories.sqlserver.robot_execution_repository import (
     RobotExecutionRepository,
-)
-from src.domain.use_cases.entities.data_extraction_type import DataExtractionType
-from src.domain.use_cases.process_auction_data_extraction_use_case import (
-    ProcessAuctionDataExtractionUseCase,
 )
 
 
@@ -57,5 +58,6 @@ class ScheduledDataExtraction:
             if robot_execution is not None:
                 robot_execution.robot_status = "ERROR"
                 robot_execution.robot_log = str(e)
+                robot_execution.robot_end_time = datetime.now()
                 self._robot_execution_repository.update(robot_execution)
             return False

@@ -1,6 +1,7 @@
 import asyncio
 import threading
 from argparse import ArgumentParser
+from datetime import datetime
 from time import localtime, sleep, strftime, time
 from typing import Any
 
@@ -41,6 +42,8 @@ extractor_timeline_strategy = PlaywrightExtractorBase(
     ConfigEnvs.TIMELINE_URL, TimelineExtractorRepository()
 )
 
+robot_repository = RobotExecutionRepository(Database())
+
 extractor_batches_strategy = PlaywrightExtractorBase(
     ConfigEnvs.SHOWCASE_URL, AuctionBatchesExtractorRepository()
 )
@@ -50,7 +53,7 @@ scheduled_data_extraction = auction_extraction_current_factory(
         DataExtractionType.TIMELINE: extractor_timeline_strategy,
         DataExtractionType.BATCHES.value: extractor_batches_strategy,
     },
-    robot_execution_repository=RobotExecutionRepository(Database()),
+    robot_execution_repository=robot_repository,
 )
 
 
@@ -102,6 +105,13 @@ class TaskRunner:
 
     def run(self):
 
+        # Add Finish status in  all process in the database
+        running_robot = robot_repository.filterByStatus("RUNNING")
+        if running_robot is not None:
+            running_robot.robot_status = "STOPPED"
+            running_robot.robot_end_time = datetime.now()
+            robot_repository.update(running_robot)
+
         # Default task scheduler
         params = ExtractorExtraParameters(
             headless=True,
@@ -116,7 +126,7 @@ class TaskRunner:
             headless=True,
             request_interceptor_state=interceptor_state,
         )
-        schedule.every().day.at("02:00:00").do(
+        schedule.every().day.at("01:30:00").do(
             job_waiter, DataExtractionType.BATCHES, params2
         )
 

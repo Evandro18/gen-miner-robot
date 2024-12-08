@@ -1,7 +1,7 @@
 import os
+
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field, StrictStr
-
 
 load_dotenv()
 
@@ -16,6 +16,7 @@ class ConfigModel(BaseModel):
     DATABASE_USER: StrictStr = Field(default="", min_length=2, max_length=255)
     DATABASE_PASSWORD: StrictStr = Field(default="", min_length=3, max_length=255)
     DATABASE_PORT: int = Field(default=5432)
+    AUCTIONS_API_URL: StrictStr = Field(default="", min_length=3, max_length=255)
 
 
 ConfigEnvs = ConfigModel(
@@ -28,4 +29,5 @@ ConfigEnvs = ConfigModel(
     DATABASE_USER=os.getenv("DATABASE_USER", "postgres"),
     DATABASE_PASSWORD=os.getenv("DATABASE_PASSWORD", "postgres"),
     DATABASE_PORT=int(os.getenv("DATABASE_PORT", "5432")),
+    AUCTIONS_API_URL=os.getenv("AUCTIONS_API_URL", ""),
 )

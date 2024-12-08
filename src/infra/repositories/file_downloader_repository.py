@@ -1,10 +1,10 @@
 import asyncio
 import os
 from typing import Callable, Optional
-from pydantic import BaseModel, StrictStr
 from urllib.parse import unquote
 
 import requests
+from pydantic import BaseModel, StrictStr
 
 from src.infra.core.logging import Log
 

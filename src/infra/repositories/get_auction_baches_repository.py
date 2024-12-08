@@ -1,10 +1,12 @@
 import re
 from typing import AsyncIterable
-from src.domain.ports.extractors import ExtractorExtraParameters
-from src.data.interceptor_state import InterceptorState
-from src.infra.core.logging import Log
-from src.domain.use_cases.entities.auction_entity import AuctionItemEntity
+
 from playwright.async_api import Page
+
+from src.data.interceptor_state import InterceptorState
+from src.domain.ports.extractors import ExtractorExtraParameters
+from src.domain.use_cases.entities.auction_entity import AuctionItemEntity
+from src.infra.core.logging import Log
 
 
 class AuctionBatchesExtractorRepository:
@@ -16,7 +18,7 @@ class AuctionBatchesExtractorRepository:
         if select_vitrine is None:
             raise ValueError("Select vitrine not found")
 
-        await select_vitrine.click()
+        await select_vitrine.dispatch_event("click")
         btn_passo_1 = await page.query_selector("#btnPasso1")
         await page.wait_for_selector("#btnPasso1")
         if btn_passo_1 is None:
@@ -235,7 +237,7 @@ async def extract_data_from_modal(
         Log.error(f"Error on extract thumbnails: {e}")
     selector_actions = "#modalResultadoDetalhe .action a"
     actions = await page.query_selector_all(selector_actions)
-    await page.wait_for_selector(selector_actions)
+
     edital_action = actions[1]
     catalog_action = actions[2]
 

@@ -1,5 +1,8 @@
 import json
+
 import aiohttp
+
+from src.config.env import ConfigEnvs
 from src.domain.use_cases.entities.auction_entity import AuctionItemEntity
 from src.infra.core.logging import Log
 
@@ -7,7 +10,7 @@ from src.infra.core.logging import Log
 class InsertAuctionBatchRepository:
 
     def __init__(self) -> None:
-        self._path = "http://localhost:8082/backend-auctions/auctions"
+        self._path = ConfigEnvs.AUCTIONS_API_URL
 
     async def execute(self, auction_item: list[AuctionItemEntity]) -> bool:
         async with aiohttp.ClientSession() as session:
@@ -27,5 +30,8 @@ class InsertAuctionBatchRepository:
                     if response.ok:
                         Log.info(f"Inserted {len(auction_item)} items")
                     return response.status == 200
-            except:
+            except Exception as e:
+                Log.info(
+                    f"Error on insert auction: {auction_item[0].auction_id} batch number: {auction_item[0].batch_number}, msg: {e}"
+                )
                 return False

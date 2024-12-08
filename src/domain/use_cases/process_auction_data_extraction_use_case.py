@@ -1,30 +1,20 @@
-import asyncio
-from datetime import date, datetime
-from time import sleep
-from types import FrameType
-from typing import Any, AsyncIterable
 from src.domain.ports.extractors import ExtractorExtraParameters
+from src.domain.ports.search_auction_batches_repository import (
+    SearchAuctionBatchesRepository,
+)
 from src.domain.use_cases.entities.auction_file_extracted_data import (
     AuctionDataExtracted,
 )
 from src.domain.use_cases.entities.data_extraction_type import DataExtractionType
-from src.domain.use_cases.entities.roboto_execution_entity import RobotExecutionEntity
-from src.infra.core.logging import Log
-from src.domain.ports.search_auction_batches_repository import (
-    SearchAuctionBatchesRepository,
-)
 from src.domain.use_cases.extract_auction_data_from_documents_use_case import (
     ExtractAuctionDataFromDocumentsUseCase,
 )
 from src.domain.use_cases.save_auction_batch_files_use_case import (
     SaveAuctionBatchFilesUseCase,
 )
+from src.infra.core.logging import Log
 from src.infra.repositories.insert_auction_batch_repository import (
     InsertAuctionBatchRepository,
-)
-from src.domain.use_cases.entities.auction_entity import AuctionItemEntity
-from src.infra.repositories.sqlserver.robot_execution_repository import (
-    RobotExecutionRepository,
 )
 
 
@@ -94,13 +84,8 @@ class ProcessAuctionDataExtractionUseCase:
 
                 await self._insert_auction_batch.execute([batch_item])
 
+            Log.info(f"Data extraction for: {type.value} finished")
             return failed_batches
         except Exception as e:
-            return [str(e)]
-
-    # def kill_process(self, signal: int, frame: FrameType | None) -> Any:
-    #     exists = self._robot_execution_repository.filterByStatus("RUNNING")
-    #     if exists is not None:
-    #         exists.robot_status = "KILLED"
-    #         self._robot_execution_repository.update(exists)
-    #     return True
+            Log.info(f"Error on ProcessAuctionDataExtractionUseCase: {e}")
+            raise e
