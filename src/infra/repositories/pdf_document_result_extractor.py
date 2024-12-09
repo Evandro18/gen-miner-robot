@@ -36,7 +36,7 @@ class PDFDocumentResultExtractor:
 
     def execute(
         self, file: Union[BytesIO, str], **kwargs: Any
-    ) -> tuple[list[BatchesWonByParticipant], list[str]]:
+    ) -> tuple[list[BatchesWonByParticipant], list[BatchesWonByParticipant]]:
         possible_winners = kwargs.get("participants", [])
 
         try:
@@ -55,9 +55,9 @@ class PDFDocumentResultExtractor:
         self,
         possible_winners: list[AuctionParticipants],
         batches_by_document: dict[str, list[str]],
-    ) -> tuple[list[BatchesWonByParticipant], list[str]]:
+    ) -> tuple[list[BatchesWonByParticipant], list[BatchesWonByParticipant]]:
         auction_lot_won: list[BatchesWonByParticipant] = []
-        auction_lot_not_won = []
+        auction_lot_not_won: list[BatchesWonByParticipant] = []
         for document in batches_by_document.keys():
             participant = next(
                 (win for win in possible_winners if document in win.document), None
@@ -73,7 +73,12 @@ class PDFDocumentResultExtractor:
                 )
                 continue
 
-            auction_lot_not_won.extend(batches_by_document[document])
+            auction_lot_not_won.append(
+                BatchesWonByParticipant(
+                    document=document,
+                    batches=batches_by_document[document],
+                )
+            )
 
         return auction_lot_won, auction_lot_not_won
 

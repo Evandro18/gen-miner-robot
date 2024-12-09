@@ -27,7 +27,7 @@ class AuctionItemEntity(BaseModel):
     pick_up_location: StrictStr = Field(default=None)
     images: list[StrictStr] = Field(default=[])
     sold_batches: list[BatchesWonByParticipant] = Field(default=[])
-    unsold_batches: list[StrictStr] = Field(default=[])
+    unsold_batches: list[BatchesWonByParticipant] = Field(default=[])
 
     def __str__(self) -> StrictStr:
         base_str = f"{self.state}-{self.city}-{self.auction_id}"

@@ -6,7 +6,7 @@ from src.infra.repositories.pdf_document_result_extractor import AuctionParticip
 
 
 class GetAuctionParticipantsRepository:
-    _path = f"{ConfigEnvs.AUCTIONS_API_URL}/auction-batch-winners/open"
+    _path = f"{ConfigEnvs.AUCTIONS_API_URL}/auction-batch-winners/open?thirdParty=0"
 
     async def get_auction_participants(self) -> list[AuctionParticipants]:
         async with aiohttp.ClientSession() as session:

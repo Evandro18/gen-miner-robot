@@ -71,7 +71,7 @@ class ExtractAuctionDataFromDocumentsUseCase:
 
     async def _extract_auction_result(
         self, document_paths: list[str]
-    ) -> tuple[list[BatchesWonByParticipant], list[str]]:
+    ) -> tuple[list[BatchesWonByParticipant], list[BatchesWonByParticipant]]:
         # Extracts the auction data from ata document
         path = next(
             (

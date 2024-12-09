@@ -1,7 +1,9 @@
-from pydantic import BaseModel
+from typing import Optional
+
+from pydantic import BaseModel, Field
 
 
 class BatchesWonByParticipant(BaseModel):
     document: str
-    id: int
+    id: Optional[int] = Field(default=None)
     batches: list[str]
