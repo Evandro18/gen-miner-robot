@@ -1,14 +1,17 @@
-from io import BytesIO
 import os
-from typing import Any, Union
-from src.infra.repositories.pdf_reader_base import PDFTextExtractorAbstract
+from io import BytesIO
+from typing import Any, Optional, Union
+
 from src.infra.core.logging import Log
+from src.infra.repositories.pdf_reader_base import PDFTextExtractorAbstract
 
 dirname = os.path.dirname(os.path.realpath(__file__))
 
 
 class PDFTextExtractor(PDFTextExtractorAbstract):
-    def execute(self, file: Union[BytesIO, str]) -> dict[str, Any]:
+    def execute(
+        self, file: Union[BytesIO, str], **kwargs: Optional[Any]
+    ) -> dict[str, Any]:
         try:
             file_reader = self._read_pdf(file)
             result = self._extract_text(file_reader)

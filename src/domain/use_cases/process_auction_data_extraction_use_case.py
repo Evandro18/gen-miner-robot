@@ -56,7 +56,7 @@ class ProcessAuctionDataExtractionUseCase:
                 batch_item.images = imgs
                 batch_item.documents = docs
 
-                result = self._extract_auction_data_from_documents.execute(
+                result = await self._extract_auction_data_from_documents.execute(
                     batch_item.documents
                 )
 

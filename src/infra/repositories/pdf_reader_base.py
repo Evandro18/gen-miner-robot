@@ -1,10 +1,11 @@
-from abc import abstractmethod
-from io import BytesIO
 import os
 import re
+from abc import abstractmethod
+from io import BytesIO
 from typing import Any, Optional, Union
-import pypdf
+
 import pymupdf
+import pypdf
 from pymupdf import Document
 
 dirname = os.path.dirname(os.path.realpath(__file__))
@@ -24,7 +25,7 @@ class PDFTextExtractorAbstract:
         return pypdf.PdfReader(bytes, strict=False)
 
     @abstractmethod
-    def execute(self, file: Union[BytesIO, str]) -> dict[str, Any]:
+    def execute(self, file: Union[BytesIO, str], **kwargs) -> dict[str, Any]:
         """Method to extract especific data from a pdf file"""
         raise NotImplementedError("Method not implemented")
 

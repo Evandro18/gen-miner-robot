@@ -1,22 +1,10 @@
+from src.config.env import ConfigEnvs
+from src.data.hash_string import HashString
 from src.domain.ports.search_auction_batches_repository import (
     SearchAuctionBatchesRepository,
 )
-from src.infra.repositories.pdf_document_result_extractor import (
-    PDFDocumentResultExtractor,
-)
-from src.config.env import ConfigEnvs
-from src.data.hash_string import HashString
 from src.domain.use_cases.extract_auction_data_from_documents_use_case import (
     ExtractAuctionDataFromDocumentsUseCase,
-)
-from src.infra.repositories.pdf_document_extractor import PDFTextExtractor
-from src.infra.commads.scheduled_data_extraction import ScheduledDataExtraction
-from src.infra.repositories.file_downloader_repository import (
-    FileDownloaderRepository,
-    FileRepositoryConfig,
-)
-from src.infra.repositories.insert_auction_batch_repository import (
-    InsertAuctionBatchRepository,
 )
 from src.domain.use_cases.process_auction_data_extraction_use_case import (
     ProcessAuctionDataExtractionUseCase,
@@ -24,8 +12,21 @@ from src.domain.use_cases.process_auction_data_extraction_use_case import (
 from src.domain.use_cases.save_auction_batch_files_use_case import (
     SaveAuctionBatchFilesUseCase,
 )
-
-from src.infra.repositories.sqlserver.database import Base, Database
+from src.infra.commads.scheduled_data_extraction import ScheduledDataExtraction
+from src.infra.repositories.file_downloader_repository import (
+    FileDownloaderRepository,
+    FileRepositoryConfig,
+)
+from src.infra.repositories.get_aution_participants_repository import (
+    GetAuctionParticipantsRepository,
+)
+from src.infra.repositories.insert_auction_batch_repository import (
+    InsertAuctionBatchRepository,
+)
+from src.infra.repositories.pdf_document_extractor import PDFTextExtractor
+from src.infra.repositories.pdf_document_result_extractor import (
+    PDFDocumentResultExtractor,
+)
 from src.infra.repositories.sqlserver.robot_execution_repository import (
     RobotExecutionRepository,
 )
@@ -51,6 +52,7 @@ def auction_extraction_current_factory(
         extract_auction_data_from_documents=ExtractAuctionDataFromDocumentsUseCase(
             document_extractor=PDFTextExtractor(),
             pdfdocument_result_extractor=PDFDocumentResultExtractor(),
+            get_auction_participants=GetAuctionParticipantsRepository(),
         ),
         auction_item_docs_usecase=save_images_usecase,
         # robot_execution_repository=robot_execution_repository,

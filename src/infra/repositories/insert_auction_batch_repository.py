@@ -10,7 +10,7 @@ from src.infra.core.logging import Log
 class InsertAuctionBatchRepository:
 
     def __init__(self) -> None:
-        self._path = ConfigEnvs.AUCTIONS_API_URL
+        self._path = f"{ConfigEnvs.AUCTIONS_API_URL}/auctions"
 
     async def execute(self, auction_item: list[AuctionItemEntity]) -> bool:
         async with aiohttp.ClientSession() as session:

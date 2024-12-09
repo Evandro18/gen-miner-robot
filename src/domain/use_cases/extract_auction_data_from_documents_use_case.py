@@ -1,9 +1,17 @@
 import re
-from typing import Any, Optional
-from src.infra.core.logging import Log
+from typing import Optional
+
 from src.domain.ports.document_extractor import DocumentExtractor
+from src.domain.ports.get_auctions_participants import GetAuctionParticipantsRepository
 from src.domain.use_cases.entities.auction_file_extracted_data import (
     AuctionDataExtracted,
+)
+from src.domain.use_cases.entities.batches_won_by_document_entity import (
+    BatchesWonByParticipant,
+)
+from src.infra.core.logging import Log
+from src.infra.repositories.pdf_document_result_extractor import (
+    PDFDocumentResultExtractor,
 )
 
 
@@ -11,31 +19,29 @@ class ExtractAuctionDataFromDocumentsUseCase:
     def __init__(
         self,
         document_extractor: DocumentExtractor,
-        pdfdocument_result_extractor: DocumentExtractor,
+        pdfdocument_result_extractor: PDFDocumentResultExtractor,
+        get_auction_participants: GetAuctionParticipantsRepository,
     ):
         self._document_extractor = document_extractor
         self._pdfdocument_result_extractor = pdfdocument_result_extractor
+        self._get_auction_participants = get_auction_participants
 
-    def execute(self, document_paths: list[str]) -> Optional[AuctionDataExtracted]:
+    async def execute(
+        self, document_paths: list[str]
+    ) -> Optional[AuctionDataExtracted]:
         Log.info("Extracting auction data from documents")
         try:
             document = self._extract_properties_from_notice(document_paths)
-            extracted_data = self._extract_auction_result(document_paths)
+            auction_lot_won, auction_lot_not_won = await self._extract_auction_result(
+                document_paths
+            )
             if document is None:
                 return None
 
             result = AuctionDataExtracted(
                 **document,
-                sold_batches=(
-                    extracted_data["sold_batches"]
-                    if "sold_batches" in extracted_data
-                    else []
-                ),
-                unsold_batches=(
-                    extracted_data["unsold_batches"]
-                    if "unsold_batches" in extracted_data
-                    else []
-                ),
+                sold_batches=auction_lot_won,
+                unsold_batches=auction_lot_not_won,
             )
             Log.info(f"Auction data extracted successfully id {result}")
             return result
@@ -63,7 +69,9 @@ class ExtractAuctionDataFromDocumentsUseCase:
         document = self._document_extractor.execute(path)
         return document
 
-    def _extract_auction_result(self, document_paths: list[str]) -> dict[str, Any]:
+    async def _extract_auction_result(
+        self, document_paths: list[str]
+    ) -> tuple[list[BatchesWonByParticipant], list[str]]:
         # Extracts the auction data from ata document
         path = next(
             (
@@ -76,7 +84,10 @@ class ExtractAuctionDataFromDocumentsUseCase:
         )
         if not path:
             Log.info("No auction result document found")
-            return {}
+            return [], []
 
-        document = self._pdfdocument_result_extractor.execute(path)
-        return document
+        participants = await self._get_auction_participants.get_auction_participants()
+        auction_lot_won, auction_lot_not_won = (
+            self._pdfdocument_result_extractor.execute(path, participants=participants)
+        )
+        return auction_lot_won, auction_lot_not_won

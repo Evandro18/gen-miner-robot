@@ -2,6 +2,10 @@ from typing import Optional
 
 from pydantic import BaseModel, Field, StrictStr
 
+from src.domain.use_cases.entities.batches_won_by_document_entity import (
+    BatchesWonByParticipant,
+)
+
 
 class AuctionItemEntity(BaseModel):
     auction_id: Optional[StrictStr] = Field(default=None)
@@ -22,7 +26,7 @@ class AuctionItemEntity(BaseModel):
     result_date: Optional[str] = Field(default=None)
     pick_up_location: StrictStr = Field(default=None)
     images: list[StrictStr] = Field(default=[])
-    sold_batches: list[StrictStr] = Field(default=[])
+    sold_batches: list[BatchesWonByParticipant] = Field(default=[])
     unsold_batches: list[StrictStr] = Field(default=[])
 
     def __str__(self) -> StrictStr:
